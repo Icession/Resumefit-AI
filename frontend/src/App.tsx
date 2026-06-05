@@ -1,7 +1,7 @@
 import { useState } from "react";
 import AnalyzeForm from "./components/AnalyzeForm";
 import ResultsView from "./components/ResultsView";
-import { analyzeResume } from "./api";
+import { analyzeResume, analyzeResumeFile } from "./api";
 import type { AnalyzeResponse } from "./types";
 
 export default function App() {
@@ -9,11 +9,17 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
 
-  async function handleSubmit(resume: string, jobDescription: string) {
+  async function handleSubmit(
+    resumeText: string,
+    resumeFile: File | null,
+    jobDescription: string
+  ) {
     setLoading(true);
     setError(null);
     try {
-      const data = await analyzeResume(resume, jobDescription);
+      const data = resumeFile
+        ? await analyzeResumeFile(resumeFile, jobDescription)
+        : await analyzeResume(resumeText, jobDescription);
       setResult(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -30,8 +36,8 @@ export default function App() {
           Does your resume fit the job?
         </h1>
         <p className="mt-3 max-w-xl text-muted">
-          Paste your resume and a job description to get a match score, missing
-          keywords, and concrete rewrite suggestions.
+          Paste or upload your resume and a job description to get a match score,
+          missing keywords, and concrete rewrite suggestions.
         </p>
       </header>
 
