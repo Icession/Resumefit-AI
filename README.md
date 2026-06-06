@@ -11,7 +11,7 @@ real experience — so you can tailor every application with confidence.
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)
 ![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?logo=googlegemini&logoColor=fff)
 
-**Live Demo:** https://resumatch.vercel.app
+**Live Demo:** https://resumatch-kl.vercel.app
 
 > Note: the backend runs on a free tier that sleeps after inactivity, so the first
 > analysis after a while may take ~50 seconds to wake up. It's fast afterward.
