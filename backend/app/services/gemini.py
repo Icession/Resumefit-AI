@@ -1,9 +1,11 @@
 """AI analysis service backed by the Google Gemini API."""
 import os
+import time
 from functools import lru_cache
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors
 
 from app.schemas import AnalyzeRequest, AnalyzeResponse
 
@@ -11,7 +13,10 @@ load_dotenv()
 
 MODEL = "gemini-2.5-flash"
 
-PROMPT_TEMPLATE = PROMPT_TEMPLATE = """You are an expert technical recruiter and resume coach.
+RETRYABLE_CODES = {429, 500, 502, 503, 504}
+MAX_ATTEMPTS = 3
+
+PROMPT_TEMPLATE = """You are an expert technical recruiter and resume coach.
 Compare the candidate's RESUME against the JOB DESCRIPTION and produce a fit report.
 
 Integrity rules (these matter most):
@@ -54,22 +59,38 @@ def _client() -> genai.Client:
 
 
 def analyze_resume(payload: AnalyzeRequest) -> AnalyzeResponse:
-    """Call Gemini to analyze a resume against a job description."""
+    """Call Gemini to analyze a resume, retrying briefly on transient errors."""
     prompt = PROMPT_TEMPLATE.format(
         resume=payload.resume,
         job_description=payload.job_description,
     )
 
-    response = _client().models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": AnalyzeResponse,
-        },
-    )
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            response = _client().models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config={
+                    "temperature": 0.2,
+                    "response_mime_type": "application/json",
+                    "response_schema": AnalyzeResponse,
+                },
+            )
+            
+            result = response.parsed
+            if result is None:
+                result = AnalyzeResponse.model_validate_json(response.text)
+            return result
 
-    result = response.parsed
-    if result is None:
-        result = AnalyzeResponse.model_validate_json(response.text)
-    return result
+        except errors.APIError as exc:
+            is_last_attempt = attempt == MAX_ATTEMPTS - 1
+            if exc.code in RETRYABLE_CODES:
+                if not is_last_attempt:
+                    time.sleep(2 ** attempt)
+                    continue
+                raise RuntimeError(
+                    "The AI service is busy right now. Please try again in a moment."
+                ) from exc
+            raise
+
+    raise RuntimeError("Gemini request failed after retries.")
