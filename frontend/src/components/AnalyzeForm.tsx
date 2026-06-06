@@ -9,6 +9,32 @@ interface Props {
   ) => void;
 }
 
+const SAMPLE_RESUME = `Jane Doe
+Frontend Developer
+
+EXPERIENCE
+- Built responsive web apps with React and JavaScript.
+- Worked on the company website and made it load faster.
+- Collaborated with designers to implement UI from Figma mockups.
+
+SKILLS
+React, JavaScript, HTML, CSS, Git
+
+EDUCATION
+B.S. in Computer Science, 2023`;
+
+const SAMPLE_JOB = `Full-Stack Developer
+
+We're looking for a Full-Stack Developer to build features end to end.
+
+Requirements:
+- 2+ years building production web applications
+- Strong React and TypeScript skills
+- Experience with Node.js and REST APIs
+- Familiarity with PostgreSQL or another database
+- Docker and CI/CD experience a plus
+- Cloud deployment (AWS or GCP)`;
+
 export default function AnalyzeForm({ loading, onSubmit }: Props) {
   const [resume, setResume] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -27,8 +53,16 @@ export default function AnalyzeForm({ loading, onSubmit }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  function handleSample() {
+    setResume(SAMPLE_RESUME);
+    setJobDescription(SAMPLE_JOB);
+    clearFile();
+    onSubmit(SAMPLE_RESUME, null, SAMPLE_JOB);
+  }
+
   return (
     <div className="grid gap-5 md:grid-cols-2">
+      {/* Resume: paste text OR upload a file */}
       <div>
         <span className="mb-2 block text-sm font-medium text-muted">Your resume</span>
         <textarea
@@ -70,6 +104,7 @@ export default function AnalyzeForm({ loading, onSubmit }: Props) {
         </div>
       </div>
 
+      {/* Job description */}
       <label className="block">
         <span className="mb-2 block text-sm font-medium text-muted">Job description</span>
         <textarea
@@ -83,7 +118,7 @@ export default function AnalyzeForm({ loading, onSubmit }: Props) {
         />
       </label>
 
-      <div className="md:col-span-2">
+      <div className="md:col-span-2 flex flex-wrap items-center gap-3">
         <button
           disabled={!canSubmit}
           onClick={() => onSubmit(resume, file, jobDescription)}
@@ -91,6 +126,15 @@ export default function AnalyzeForm({ loading, onSubmit }: Props) {
                      hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           {loading ? "Analyzing…" : "Analyze fit"}
+        </button>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={handleSample}
+          className="rounded-full border border-forest/40 px-6 py-3 font-medium text-forest
+                     transition hover:bg-forest/5 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Try with a sample
         </button>
       </div>
     </div>
