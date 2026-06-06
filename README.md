@@ -5,7 +5,6 @@
 🔗 **Live Demo:** _<add your deployed URL here>_
 
 ![ResumeFit AI screenshot](docs/screenshot.png)
-<!-- Replace with a real screenshot or demo GIF once deployed -->
 
 ---
 
