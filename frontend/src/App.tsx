@@ -31,7 +31,7 @@ export default function App() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-16">
       <header className="mb-12">
-        <p className="mb-2 text-sm uppercase tracking-[0.25em] text-forest">ResumeFit AI</p>
+        <p className="mb-2 text-sm uppercase tracking-[0.25em] text-forest">ResuMatch</p>
         <h1 className="font-display text-4xl font-semibold leading-tight md:text-5xl">
           Does your resume fit the job?
         </h1>
