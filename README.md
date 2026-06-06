@@ -1,4 +1,4 @@
-# ResumeFit AI 🎯
+# ResuMatch 🎯
 
 > AI-powered Resume / Job-Fit Analyzer. Paste your resume and a job description to get a match score, missing keywords, and rewrite suggestions for weak bullet points.
 

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import analyze
 
 app = FastAPI(
-    title="ResumeFit AI",
+    title="ResuMatch",
     description="Analyze a resume against a job description.",
     version="0.1.0",
 )
