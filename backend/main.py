@@ -1,16 +1,23 @@
 """ResumeFit AI - FastAPI entry point."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from app.db import create_db_and_tables
 
 from app.routers import analyze
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
 
 app = FastAPI(
     title="ResumeFit AI",
     description="Analyze a resume against a job description.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
-# Allow the React dev server (and later, the deployed frontend) to call this API.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
