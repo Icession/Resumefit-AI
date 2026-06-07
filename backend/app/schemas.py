@@ -39,3 +39,14 @@ class UserRead(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
+    
+class AnalysisRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_description: str
+    match_score: int
+    missing_keywords: list[str]
+    suggestions: list[Suggestion]
+    summary: str
+    created_at: datetime
