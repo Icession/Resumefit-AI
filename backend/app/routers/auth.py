@@ -1,10 +1,11 @@
-"""Authentication endpoints: signup and login."""
+"""Authentication endpoints: signup, login, and current-user info."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from app.db import get_session
+from app.deps import get_current_user
 from app.models import User
-from app.schemas import Token, UserCreate
+from app.schemas import Token, UserCreate, UserRead
 from app.services.auth import create_access_token, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -34,3 +35,8 @@ def login(data: UserCreate, session: Session = Depends(get_session)):
             detail="Incorrect email or password.",
         )
     return Token(access_token=create_access_token(user.id))
+
+
+@router.get("/me", response_model=UserRead)
+def me(current_user: User = Depends(get_current_user)):
+    return current_user
