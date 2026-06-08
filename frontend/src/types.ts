@@ -10,6 +10,34 @@ export interface AnalyzeResponse {
   summary: string;
 }
 
+export interface CoverLetterResponse {
+  cover_letter: string;
+}
+
+export interface CoverLetterLink {
+  label: string;
+  url: string;
+}
+
+export interface CoverLetterDetails {
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  links?: CoverLetterLink[];
+  company_name?: string;
+  role_title?: string;
+  hiring_manager?: string;
+}
+
+export interface Profile {
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  links: CoverLetterLink[];
+}
+
 export interface User {
   id: number;
   email: string;

@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import create_db_and_tables
-from app.routers import analyze, auth
+from app.routers import analyze, auth, profile
 
 
 @asynccontextmanager
@@ -23,6 +23,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Allowed browser origins. Defaults to local dev; in production we set
+# ALLOWED_ORIGINS (comma-separated) to include the deployed frontend URL.
 _default_origins = "http://localhost:5173,http://127.0.0.1:5173"
 allowed_origins = [
     origin.strip()
@@ -39,8 +41,9 @@ app.add_middleware(
 
 app.include_router(analyze.router)
 app.include_router(auth.router)
+app.include_router(profile.router)
 
 
 @app.get("/")
 def root():
-    return {"status": "ok", "service": "ResuMatch", "docs": "/docs"}
+    return {"status": "ok", "service": "ResumeFit AI", "docs": "/docs"}

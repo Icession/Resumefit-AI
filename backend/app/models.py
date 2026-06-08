@@ -30,3 +30,16 @@ class Analysis(SQLModel, table=True):
     suggestions: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
     summary: str
     created_at: datetime = Field(default_factory=_utcnow)
+
+
+class Profile(SQLModel, table=True):
+    __tablename__ = "profiles"
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True, unique=True)
+    full_name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    location: str | None = None
+    links: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
+    updated_at: datetime = Field(default_factory=_utcnow)

@@ -1,4 +1,12 @@
-import type { AnalysisRecord, AnalyzeResponse, User } from "./types";
+import type {
+  AnalysisRecord,
+  AnalyzeResponse,
+  CoverLetterDetails,
+  CoverLetterLink,
+  CoverLetterResponse,
+  Profile,
+  User,
+} from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -32,6 +40,21 @@ async function parseError(res: Response): Promise<string> {
   return `Request failed (${res.status})`;
 }
 
+// Drop empty fields so we only send details the user actually filled in.
+function cleanFlat(details: Omit<CoverLetterDetails, "links">): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(details)) {
+    if (typeof value === "string" && value.trim()) out[key] = value.trim();
+  }
+  return out;
+}
+
+function cleanLinks(links: CoverLetterLink[] = []): CoverLetterLink[] {
+  return links
+    .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
+    .filter((l) => l.label && l.url);
+}
+
 export async function analyzeResume(
   resume: string,
   jobDescription: string
@@ -54,6 +77,52 @@ export async function analyzeResumeFile(
   form.append("job_description", jobDescription);
 
   const res = await fetch(`${API_URL}/analyze/file`, {
+    method: "POST",
+    headers: { ...authHeaders() },
+    body: form,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function generateCoverLetter(
+  resume: string,
+  jobDescription: string,
+  details: CoverLetterDetails = {}
+): Promise<CoverLetterResponse> {
+  const { links, ...flat } = details;
+  const res = await fetch(`${API_URL}/cover-letter`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({
+      resume,
+      job_description: jobDescription,
+      ...cleanFlat(flat),
+      links: cleanLinks(links),
+    }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function generateCoverLetterFile(
+  file: File,
+  jobDescription: string,
+  details: CoverLetterDetails = {}
+): Promise<CoverLetterResponse> {
+  const { links, ...flat } = details;
+  const form = new FormData();
+  form.append("resume_file", file);
+  form.append("job_description", jobDescription);
+  for (const [key, value] of Object.entries(cleanFlat(flat))) {
+    form.append(key, value);
+  }
+  for (const link of cleanLinks(links)) {
+    form.append("link_labels", link.label);
+    form.append("link_urls", link.url);
+  }
+
+  const res = await fetch(`${API_URL}/cover-letter/file`, {
     method: "POST",
     headers: { ...authHeaders() },
     body: form,
@@ -97,6 +166,28 @@ export async function getMe(): Promise<User> {
 
 export async function getHistory(): Promise<AnalysisRecord[]> {
   const res = await fetch(`${API_URL}/history`, { headers: { ...authHeaders() } });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function getProfile(): Promise<Profile> {
+  const res = await fetch(`${API_URL}/profile`, { headers: { ...authHeaders() } });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function saveProfile(profile: Profile): Promise<Profile> {
+  const res = await fetch(`${API_URL}/profile`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({
+      full_name: profile.full_name,
+      email: profile.email,
+      phone: profile.phone,
+      location: profile.location,
+      links: (profile.links ?? []).filter((l) => l.label.trim() && l.url.trim()),
+    }),
+  });
   if (!res.ok) throw new Error(await parseError(res));
   return res.json();
 }

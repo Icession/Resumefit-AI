@@ -7,8 +7,8 @@ export default {
         paper: "#faf7f0",
         ink: "#1c1b19",
         muted: "#6b6760",
-        forest: "#1f6f54",
-        "forest-dark": "#155440",
+        forest: "#b24a2b",
+        "forest-dark": "#8c3a20",
         line: "#e6e0d4",
       },
       fontFamily: {
