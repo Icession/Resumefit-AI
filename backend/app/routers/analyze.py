@@ -9,10 +9,13 @@ from app.schemas import (
     AnalysisRead,
     AnalyzeRequest,
     AnalyzeResponse,
+    ATSReport,
+    ATSRequest,
     CoverLetterRequest,
     CoverLetterResponse,
     LinkItem,
 )
+from app.services.ats import assess_resume
 from app.services.extract import extract_text
 from app.services.gemini import analyze_resume, generate_cover_letter
 
@@ -135,6 +138,34 @@ def _make_cover_letter(payload: CoverLetterRequest) -> CoverLetterResponse:
         raise HTTPException(
             status_code=502, detail=f"Cover letter generation failed: {exc}"
         )
+
+
+@router.post("/ats-check", response_model=ATSReport, tags=["ats"])
+def ats_check(payload: ATSRequest) -> ATSReport:
+    """Check the ATS readiness of pasted resume text."""
+    return _run_ats(payload.resume, None)
+
+
+@router.post("/ats-check/file", response_model=ATSReport, tags=["ats"])
+async def ats_check_file(resume_file: UploadFile = File(...)) -> ATSReport:
+    """Check the ATS readiness of an uploaded resume file."""
+    data = await resume_file.read()
+    name = resume_file.filename or ""
+    try:
+        resume_text = extract_text(name, data)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    # Only PDFs get the deterministic file-structure checks.
+    pdf_data = data if name.lower().endswith(".pdf") else None
+    return _run_ats(resume_text, pdf_data)
+
+
+def _run_ats(resume_text: str, pdf_data: bytes | None) -> ATSReport:
+    try:
+        return assess_resume(resume_text, pdf_data)
+    except Exception as exc:  # surface a clean error to the frontend
+        raise HTTPException(status_code=502, detail=f"ATS check failed: {exc}")
 
 
 def _run(

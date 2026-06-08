@@ -2,6 +2,7 @@ import { useState } from "react";
 import AnalyzeForm from "./components/AnalyzeForm";
 import ResultsView from "./components/ResultsView";
 import CoverLetterPanel from "./components/CoverLetterPanel";
+import ATSCheckPanel from "./components/ATSCheckPanel";
 import AuthModal from "./components/AuthModal";
 import HistoryView from "./components/HistoryView";
 import ConfirmDialog from "./components/ConfirmDialog";
@@ -133,6 +134,13 @@ export default function App() {
             resumeText={lastInputs.resumeText}
             resumeFile={lastInputs.resumeFile}
             jobDescription={lastInputs.jobDescription}
+          />
+        )}
+
+        {result && lastInputs && (
+          <ATSCheckPanel
+            resumeText={lastInputs.resumeText}
+            resumeFile={lastInputs.resumeFile}
           />
         )}
 

@@ -1,6 +1,7 @@
 import type {
   AnalysisRecord,
   AnalyzeResponse,
+  ATSReport,
   CoverLetterDetails,
   CoverLetterLink,
   CoverLetterResponse,
@@ -206,4 +207,26 @@ export async function deleteAccount(): Promise<void> {
     headers: { ...authHeaders() },
   });
   if (!res.ok) throw new Error(await parseError(res));
+}
+
+export async function checkATS(resume: string): Promise<ATSReport> {
+  const res = await fetch(`${API_URL}/ats-check`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ resume }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function checkATSFile(file: File): Promise<ATSReport> {
+  const form = new FormData();
+  form.append("resume_file", file);
+  const res = await fetch(`${API_URL}/ats-check/file`, {
+    method: "POST",
+    headers: { ...authHeaders() },
+    body: form,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
 }

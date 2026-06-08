@@ -23,6 +23,30 @@ class AnalyzeResponse(BaseModel):
     summary: str = Field(..., description="One-paragraph overall assessment.")
 
 
+class ATSRequest(BaseModel):
+    resume: str = Field(..., min_length=1, description="The candidate's resume text.")
+
+
+class ATSCheckItem(BaseModel):
+    category: str = Field(..., description="Short label for the area checked.")
+    status: str = Field(..., description='One of "good", "warning", or "issue".')
+    detail: str = Field(..., description="What was found in this resume.")
+    fix: str = Field(default="", description="How to fix it (empty when status is good).")
+
+
+class ATSAIReport(BaseModel):
+    """The content checks the model fills in (no score; we compute that)."""
+
+    checks: list[ATSCheckItem] = Field(default_factory=list)
+    summary: str = Field(default="", description="One-sentence overall assessment.")
+
+
+class ATSReport(BaseModel):
+    overall_score: int = Field(..., ge=0, le=100)
+    checks: list[ATSCheckItem] = Field(default_factory=list)
+    summary: str = Field(default="")
+
+
 class CoverLetterDraft(BaseModel):
     """Internal structure Gemini fills in; assembled into the final letter text."""
 

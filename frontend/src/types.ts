@@ -38,6 +38,19 @@ export interface Profile {
   links: CoverLetterLink[];
 }
 
+export interface ATSCheckItem {
+  category: string;
+  status: string;
+  detail: string;
+  fix: string;
+}
+
+export interface ATSReport {
+  overall_score: number;
+  checks: ATSCheckItem[];
+  summary: string;
+}
+
 export interface User {
   id: number;
   email: string;

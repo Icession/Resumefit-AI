@@ -10,6 +10,7 @@ from google.genai import errors
 from app.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
+    ATSAIReport,
     CoverLetterDraft,
     CoverLetterRequest,
     CoverLetterResponse,
@@ -94,6 +95,36 @@ RESUME:
 
 JOB DESCRIPTION:
 {job_description}
+"""
+
+
+ATS_PROMPT = """You are an expert on Applicant Tracking Systems (ATS). Assess how well the
+RESUME below would be parsed and understood by an ATS. Judge only the text content and
+structure you can see — do NOT comment on images, colours, fonts, or file format, which are
+checked separately.
+
+For each area below, return a check object with:
+- category: a short label.
+- status: exactly one of "good", "warning", or "issue".
+- detail: one sentence on what you actually found in THIS resume (specific, not generic).
+- fix: one sentence on how to improve it (use "" when status is "good").
+
+Assess these areas:
+- Contact information: a clearly written name, email, and phone number.
+- Section headings: standard, conventional headings (e.g., Experience, Education, Skills).
+- Chronology and dates: reverse-chronological history with consistent, clear dates.
+- Skills: present and reasonably concise, not an overstuffed keyword dump.
+- Readability: short bullet points and plain text, no walls of text or unusual symbols.
+- Quantified impact: concrete results in bullets where appropriate.
+
+Rules:
+- Base every detail strictly on what is actually in the RESUME. Do not invent problems or
+  praise that the text does not support.
+- Keep each detail and fix to a single sentence.
+- Also write a one-sentence summary of the resume's overall ATS readiness.
+
+RESUME:
+{resume}
 """
 
 
@@ -222,3 +253,9 @@ def generate_cover_letter(req: CoverLetterRequest) -> CoverLetterResponse:
 
     letter = f"{greeting}\n\n{body}\n\n" + "\n".join(signature_lines)
     return CoverLetterResponse(cover_letter=letter)
+
+
+def check_ats(resume_text: str) -> ATSAIReport:
+    """Ask Gemini to assess the resume's ATS readiness from its text content."""
+    prompt = ATS_PROMPT.format(resume=resume_text)
+    return _generate(prompt, ATSAIReport, temperature=0.2)
